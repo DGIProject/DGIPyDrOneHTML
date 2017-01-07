@@ -37,6 +37,7 @@ var DRONE_CONTROLS = {
     yAxis: 0,
     degrees: 0,
     throttle: 0,
+    currentCalibrateMotor: 0,
     calibrate: [0, 0, 0, 0]
 };
 
@@ -65,7 +66,7 @@ function loadSocketServer() {
 
             DRONE_PROPERTIES.pitch = infoDrone[4];
             DRONE_PROPERTIES.roll = infoDrone[5];
-            DRONE_PROPERTIES.degrees = infoDrone[7];
+            DRONE_PROPERTIES.degrees = infoDrone[8];
             DRONE_PROPERTIES.pressure = infoDrone[10];
             DRONE_PROPERTIES.temperature = infoDrone[11];
             DRONE_PROPERTIES.humidity = infoDrone[12];

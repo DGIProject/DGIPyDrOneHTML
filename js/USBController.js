@@ -177,6 +177,8 @@ setInterval(function() {
         for(var i = 0; i < USB_CONTROLLER.buttons.length; i++) {
             if(USB_CONTROLLER.buttons[i].gamepad <= controllers[0].buttons.length) {
                 if(controllers[0].buttons[USB_CONTROLLER.buttons[i].gamepad].pressed && !USB_CONTROLLER.buttons[i].active) {
+                    console.log(USB_CONTROLLER.buttons[i].gamepad);
+
                     USB_CONTROLLER.buttons[i].active = true;
                     USB_CONTROLLER.buttons[i].ft = true;
                 }

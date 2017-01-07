@@ -14,7 +14,7 @@ var JOYSTICK_MODE = {
 var currentJoystickMode = JOYSTICK_MODE.NONE;
 
 var infoDroneList, compressText = false, ultraCompressText = false;
-var temperatureText, humidityText, textButtonCalibrateSensors, buttonStartSession;
+var temperatureText, humidityText, calibrateText, textButtonCalibrateSensors, buttonStartSession;
 var attitudeCommand, attitudeSensors, heading, variometer, airspeed, altimeter, turn_coordinator, throttle;
 
 var throttleInterface = 0;
@@ -38,6 +38,7 @@ window.onload = function() {
     var batteryText = document.getElementById('batteryText');
     temperatureText = document.getElementById('temperatureText');
     humidityText = document.getElementById('humidityText');
+    calibrateText = document.getElementById('calibrateText');
 
     var USBControllerOptions = document.getElementById('USBControllerOptions');
     var buttonDegreesMode = document.getElementById('buttonDegreesMode');
@@ -115,8 +116,34 @@ window.onload = function() {
                 USB_CONTROLLER.buttons[7].ft = false;
             }
         }
+        else {
+            if(USB_CONTROLLER.buttons[6].active && USB_CONTROLLER.buttons[6].ft) {
+                DRONE_CONTROLS.currentCalibrateMotor = (DRONE_CONTROLS.currentCalibrateMotor < 1) ? 3 : (DRONE_CONTROLS.currentCalibrateMotor - 1);
+                USB_CONTROLLER.buttons[6].ft = false;
+            }
+
+            if(USB_CONTROLLER.buttons[7].active && USB_CONTROLLER.buttons[7].ft) {
+                DRONE_CONTROLS.currentCalibrateMotor = (DRONE_CONTROLS.currentCalibrateMotor > 2) ? 0 : (DRONE_CONTROLS.currentCalibrateMotor + 1);
+                USB_CONTROLLER.buttons[7].ft = false;
+            }
+
+            if(USB_CONTROLLER.buttons[5].active && USB_CONTROLLER.buttons[5].ft) {
+                DRONE_CONTROLS.calibrate[DRONE_CONTROLS.currentCalibrateMotor] = (DRONE_CONTROLS.calibrate[DRONE_CONTROLS.currentCalibrateMotor] < 1) ? 0 : (DRONE_CONTROLS.calibrate[DRONE_CONTROLS.currentCalibrateMotor] - 1);
+                USB_CONTROLLER.buttons[5].ft = false;
+
+                sendCommandSocket('B ' + DRONE_CONTROLS.calibrate[0] + '|' + DRONE_CONTROLS.calibrate[1] + '|' + DRONE_CONTROLS.calibrate[2] + '|' + DRONE_CONTROLS.calibrate[3]);
+            }
+
+            if(USB_CONTROLLER.buttons[4].active && USB_CONTROLLER.buttons[4].ft) {
+                DRONE_CONTROLS.calibrate[DRONE_CONTROLS.currentCalibrateMotor] = (DRONE_CONTROLS.calibrate[DRONE_CONTROLS.currentCalibrateMotor] > 49) ? 50 : (DRONE_CONTROLS.calibrate[DRONE_CONTROLS.currentCalibrateMotor] + 1);
+                USB_CONTROLLER.buttons[4].ft = false;
+
+                sendCommandSocket('B ' + DRONE_CONTROLS.calibrate[0] + '|' + DRONE_CONTROLS.calibrate[1] + '|' + DRONE_CONTROLS.calibrate[2] + '|' + DRONE_CONTROLS.calibrate[3]);
+            }
+        }
 
         buttonDegreesMode.setAttribute('class', (USB_CONTROLLER.degreesMode) ? 'active' : '');
+        calibrateText.innerHTML = DRONE_CONTROLS.currentCalibrateMotor + ' ' + DRONE_CONTROLS.calibrate[0] + '|' + DRONE_CONTROLS.calibrate[1] + '|' + DRONE_CONTROLS.calibrate[2] + '|' + DRONE_CONTROLS.calibrate[3];
 
         startSession(false);
 
@@ -149,12 +176,17 @@ window.onload = function() {
         startSession(true);
     };
 
+    buttonCalibrateSensors.onclick = function() {
+        if(isPlayingSession)
+            sendCommandSocket('A Y');
+    };
+
     function startSession(button) {
         if(isConnected) {
             buttonStartSession.disabled = false;
 
             if((USB_CONTROLLER.buttons[0].active && USB_CONTROLLER.buttons[0].ft) || button) {
-                isPlayingSession = !isPlayingSession;
+                isPlayingSession = (DRONE_CONTROLS.throttle == 0 && !isPlayingSession);
 
                 if(isPlayingSession) {
                     sendCommand('P 0|0|0|0');
